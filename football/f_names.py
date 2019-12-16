@@ -52,11 +52,9 @@ def permute_letters(chars):
 
 
 # Specify whether we're searching the last name or the full name.
-full = True
+full = False
 # Specify letter to search names for.
-chars = 'ass'
-# Specify whether to print numbers beside team names.
-rank = False
+chars = 'ff'
 
 # Main page url for the website we're scraping.
 stem = 'https://www.lineups.com'
@@ -133,13 +131,8 @@ for link in team_links:
     if ct > 0:
         team_hyphen = link.split('/')[-1]
         team_name = team_hyphen.replace('-', ' ').title()
-        if rank:
-            idx = team_links.index(link)
-            team_print = '%d. %s' % (idx+1, team_name)
-            spacing = ' '*5
-        else:
-            team_print = team_name
-            spacing = ' '*2
+        team_print = team_name
+        spacing = ' '*2
         print(team_print)
 
         for m in matches:
