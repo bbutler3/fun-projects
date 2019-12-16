@@ -31,10 +31,28 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import re
 
+# Generate all capitalization permutations of a set of characters.
+def permute_letters(chars):
+    permutations = []
+    chars = chars.lower()
+    n = len(chars)
+    x = 1 << n
+
+    for i in range(x):
+        combo = [c for c in chars]
+        for j in range(n):
+            if (((i >> j) & 1) == 1):
+                combo[j] = chars[j].upper()
+
+        perm = ''.join(combo)
+        permutations.append(perm)
+
+    return permutations
+
 # Specify whether we're searching the last name or the full name.
 full = True
 # Specify letter to search names for.
-chars = 'f'
+chars = 'ass'
 # Specify whether to print numbers beside team names.
 rank = False
 
@@ -93,7 +111,14 @@ for link in team_links:
         full_name = name_chunk.split('  ')[0]
         name_list = full_name.split(' ')
         if full:
-            pass
+            for suffix in suffixes:
+                if suffix in name_list:
+                    name_list.remove(suffix)
+            name_nospace = ''.join(name_list)
+            for perm in permute_letters(chars):
+                if perm in name_nospace:
+                    print(spacing + full_name)
+                    break
         else:
             # Make last name into list (in case it contains > 1 word).
             last_list = name_list[1:]
@@ -104,5 +129,6 @@ for link in team_links:
             last = ' '.join(last_list)
             if (chars in last) or (chars.title()) in last:
                 print(spacing + full_name)
+
     print()
     time.sleep(1)
