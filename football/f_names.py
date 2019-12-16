@@ -31,6 +31,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import re
 
+
 # Generate all capitalization permutations of a set of characters.
 def permute_letters(chars):
     permutations = []
@@ -48,6 +49,7 @@ def permute_letters(chars):
         permutations.append(perm)
 
     return permutations
+
 
 # Specify whether we're searching the last name or the full name.
 full = True
@@ -86,21 +88,13 @@ for chunk in link_chunks:
 suffixes = ['Jr', 'Sr', 'II', 'III', 'IV', 'V']
 
 for link in team_links:
-    # Print team name, optionally with its rank 1-32 in alphabetical
-    # order by city.
-    team_hyphen = link.split('/')[-1]
-    team_name = team_hyphen.replace('-', ' ').title()
-    if rank:
-        idx = team_links.index(link)
-        team_print = '%d. %s' % (idx+1, team_name)
-        spacing = ' '*5
-    else:
-        team_print = team_name
-        spacing = ' '*2
-    print(team_print)
+    matches = []
+    ct = 0
+
     # Construct individual roster url and retrieve roster with Pandas.
     team_url = stem + link
     roster = pd.read_html(team_url)[0]
+
     # Loop through each player and engineer their name from the mess
     # returned in the dataframe.  Example 'Name' column entry for
     # Leighton Vander Esch:
@@ -117,18 +111,40 @@ for link in team_links:
             name_nospace = ''.join(name_list)
             for perm in permute_letters(chars):
                 if perm in name_nospace:
-                    print(spacing + full_name)
+                    matches.append(full_name)
+                    ct += 1
                     break
         else:
             # Make last name into list (in case it contains > 1 word).
             last_list = name_list[1:]
+
             # Remove suffix from last name.
             for suffix in suffixes:
                 if suffix in last_list:
                     last_list.remove(suffix)
             last = ' '.join(last_list)
             if (chars in last) or (chars.title()) in last:
-                print(spacing + full_name)
+                matches.append(full_name)
+                ct += 1
 
-    print()
+    # If a player with matching name is on the roster, print team name.
+    # (optionally with its rank 1-32 in alphabetical order by city).
+    # Then print matching players.
+    if ct > 0:
+        team_hyphen = link.split('/')[-1]
+        team_name = team_hyphen.replace('-', ' ').title()
+        if rank:
+            idx = team_links.index(link)
+            team_print = '%d. %s' % (idx+1, team_name)
+            spacing = ' '*5
+        else:
+            team_print = team_name
+            spacing = ' '*2
+        print(team_print)
+
+        for m in matches:
+            print(spacing + m)
+
+        print()
+
     time.sleep(1)
